@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+
+        .chat-container {
+            max-width: 500px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #FF1493;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .chat-history {
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            max-width: 70%;
+            display: inline-block;
+            clear: both;
+        }
+
+        .user-message {
+            background-color: #ffd1dc;
+            color: #fff;
+            align-self: flex-start;
+            float: left; /* Align user messages to the left */
+        }
+
+        .bot-message {
+            background-color: #f0f2f5;
+            color: #333;
+            align-self: flex-end;
+            float: right; /* Align bot messages to the right */
+        }
+
+        .user-input {
+            width: calc(100% - 50px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+
+        .send-button {
+            background-color: #FF1493;
+            color: #fff;
+            border: none;
+            border-radius: 90%;
+            cursor: pointer;
+            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .chat-container {
+                max-width: 100%;
+            }
+
+            .user-input {
+                width: calc(100% - 60px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Chatbot</div>
+        <div class="chat-history" id="chat-history"></div>
+        <div style="display: flex; align-items: center;">
+            <input type="text" class="user-input" id="user-input" placeholder="Type your message...">
+            <button class="send-button" id="send-button">➤</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const userInput = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-button");
+            const chatHistory = document.getElementById("chat-history");
+
+            sendButton.addEventListener("click", function() {
+                sendMessage();
+            });
+
+            userInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = userInput.value;
+                userInput.value = "";
+
+                // Display user message in the chat history
+                displayMessage("user", message);
+
+                // Send the message to the Flask backend using AJAX
+                fetch("/process", {  // Change the URL to /process
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ text: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const response = data.response;
+                    // Display bot's response in the chat history
+                    displayMessage("bot", response);
+                });
+            }
+
+            function displayMessage(sender, message) {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message");
+                messageDiv.classList.add(`${sender}-message`);
+                messageDiv.innerHTML = `<p>${message}</p>`;
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
